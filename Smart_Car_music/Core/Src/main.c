@@ -89,6 +89,9 @@ int g_iButtonState_Button1=0,g_iButtonState_Button2=0,g_iButtonState_Button3=0;
 //用于音乐播放的全局变量
 uint8_t Music_Volume;     //音量
 uint8_t Music_Flag;       //切换音乐的标志位
+uint8_t Music_Off=0;     	//音乐停止的标志位
+uint8_t Cycle_Flag=0;     //单曲循环的标志位
+uint8_t Music_List=0;     //音乐列表序号
 uint16_t BGM_Length;      //BGM背景音乐的长度
 Note_TypeDef *BGM_Current;      //指向当前BGM的指针
 unsigned char MoleMusicVolum;   //音量,建议范围1~10,1大10小
@@ -334,10 +337,10 @@ int main(void)
 		if(g_iButtonState_UKEY == 1)
 	  {
 		  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-			if(MoleMusicVolum==1)
-				MoleMusicVolum=10;
+			if(MoleMusicVolum==10)
+				MoleMusicVolum=1;
 			else
-				MoleMusicVolum--;
+				MoleMusicVolum++;
 		  g_iButtonState_UKEY=0;
 	  }
 //	  else
@@ -409,7 +412,22 @@ int main(void)
 //		}
 	  if(g_iButtonState_Button2 == 1)
 	  {
-			music_player(MoleMusicVolum,TWO_TIGERS_MUSIC);
+			if(Music_List==5)
+				Music_List=0;
+			else
+				Music_List++;
+			if(Music_List==0)
+				music_player(MoleMusicVolum,POLICE_MUSIC);
+			else if(Music_List==1)
+				music_player(MoleMusicVolum,TWO_TIGERS_MUSIC);
+			else if(Music_List==2)
+				music_player(MoleMusicVolum,SUPER_MARIO_MUSIC);
+			else if(Music_List==3)
+				music_player(MoleMusicVolum,DOU_DI_ZHU_MUSIC);
+			else if(Music_List==4)
+				music_player(MoleMusicVolum,PEPPA_PIG_MUSIC);
+			else
+				music_player(MoleMusicVolum,AMBULANCE_MUSIC);
 		  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
 			Debug_Flag=!Debug_Flag;
 			t_Debug_Flag=0;	
@@ -453,7 +471,14 @@ int main(void)
 //		}
 	  if(g_iButtonState_Button3 == 1)
 	  {
-			Music_Flag=MUSIC_FINISH;
+			Music_Off=!Music_Off;
+			if(Music_Off)
+				Music_Flag=MUSIC_FINISH;
+			else
+			{
+				Cycle_Flag=!Cycle_Flag;
+				Music_Flag=MUSIC_BEGIN;
+			}
 			OLED_RST_Flag=1;
 			oled_t_ms=0;
 		  g_iButtonState_Button3=0;
@@ -679,7 +704,8 @@ static void BGM_handler(void)
 		else//演奏结束
 		{
 			i = 1;
-			Music_Flag = MUSIC_FINISH;
+			if(!Cycle_Flag)
+				Music_Flag = MUSIC_FINISH;
 		}
 		passed_time = 0;//时间重置
 	}
@@ -741,9 +767,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			printf("hello world\n");
 		}
 
-
-			
-		
 		
 /*******************************************************************************************************************/
 		if( HAL_GPIO_ReadPin(UKEY_GPIO_Port,UKEY_Pin) == GPIO_PIN_RESET )//如果引脚检测到          低电平
