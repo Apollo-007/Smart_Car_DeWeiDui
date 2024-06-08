@@ -337,10 +337,10 @@ int main(void)
 		if(g_iButtonState_UKEY == 1)
 	  {
 		  HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
-			if(MoleMusicVolum==10)
-				MoleMusicVolum=1;
+			if(Music_Volume==10)
+				Music_Volume=1;
 			else
-				MoleMusicVolum++;
+				Music_Volume++;
 		  g_iButtonState_UKEY=0;
 	  }
 //	  else
